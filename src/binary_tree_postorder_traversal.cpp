@@ -17,6 +17,72 @@ struct TreeNode {
   TreeNode(int x) : val(x), left(NULL), right(NULL) {}
 };
 
+// Morris postorder traversal
+//
+// variation of morris inorder traversal
+// 
+// 1. cur->left is null: cur = cur->right.
+// 2. cur->left is not null:
+//    find predecessor of cur node.
+//    2.a) predecessor->right = null: not threaded, set thread.
+//          predecssor->right = cur.
+//          cur = cur->left.
+//    2.b) predecessor->left != null: have been threaded, reset.
+//          reverse(cur->left, prev)
+//          predecessor->right = null.
+//          cur = cur->right.
+class Solution {
+ public:
+  vector<int> postorder;
+  void reverse(TreeNode* from, TreeNode* to) {
+    if (from == to)
+      return;
+    TreeNode* x = from;
+    TreeNode* y = from->right;
+    TreeNode* tmp;
+    while (x != to) {
+      tmp = y->right;
+      y->right = x;
+      x = y;
+      y = tmp;
+    } 
+  }
+  void printReverse(TreeNode* from, TreeNode* to) {
+    reverse(from, to);
+    TreeNode* p = to;
+    while (1) {
+      postorder.push_back(p->val);
+      if (p == from)
+        break;
+      p = p->right;
+    }
+    reverse(to, from);
+  }
+  vector<int> postorderTraversal(TreeNode *root) {
+    TreeNode virtual_node(0);
+    virtual_node.left = root;
+    TreeNode* cur = &virtual_node;
+    while (cur) {
+      if (!cur->left)
+        cur = cur->right;
+      else {
+        TreeNode* prev = cur->left;
+        while (prev->right && prev->right != cur)
+          prev = prev->right;
+        if (!prev->right) {
+          prev->right = cur;
+          cur = cur->left;
+        } else {
+          printReverse(cur->left, prev);
+          prev->right = NULL;
+          cur = cur->right;
+        }
+      }
+    }
+    return postorder;
+  }
+};
+
 // A more elegant solution, without visited flag.
 //
 // A preorder-based solution with a stack. 
@@ -33,7 +99,7 @@ struct TreeNode {
 //
 // Just record the preorder sequence and reverse it.
 // A more detailed explaination from: http://leetcode.com/2010/10/binary-tree-post-order-traversal.html 
-class Solution {
+class Solution1 {
  public:
   vector<int> postorderTraversal(TreeNode *root) {
     stack<TreeNode*> s;

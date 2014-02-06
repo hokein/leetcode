@@ -17,8 +17,47 @@ struct TreeNode {
   TreeNode(int x) : val(x), left(NULL), right(NULL) {}
 };
 
-// An iterative solution.
+// Morris preorder traversal, O(1) space
+// the same as inorder traversal.
+// 1. cur->left is null: print cur->val & cur = cur->right.
+// 2. cur->left is not null:
+//    find predecessor of cur node.
+//    2.a) predecessor->right = null: not threaded, set thread.
+//          print cur->val
+//          predecssor->right = cur.
+//          cur = cur->left.
+//    2.b) predecessor->left != null: have been threaded, reset.
+//          predecessor->right = null.
+//          cur = cur->right.
 class Solution {
+ public:
+  vector<int> preorderTraversal(TreeNode *root) {
+    TreeNode* cur = root;
+    vector<int> result;
+    while (cur) {
+      if (!cur->left) {
+        result.push_back(cur->val);
+        cur = cur->right;
+      } else {
+        TreeNode* prev = cur->left;
+        while (prev->right && prev->right != cur)
+          prev = prev->right;
+        if (!prev->right) {
+          result.push_back(cur->val);
+          prev->right = cur;
+          cur = cur->left;
+        } else {
+          prev->right = NULL;
+          cur = cur->right;
+        }
+      }
+    }
+    return result;
+  }
+};
+
+// An iterative solution: O(n) space.
+class Solution1 {
 public:
   vector<int> preorderTraversal(TreeNode *root) {
     stack<TreeNode*> s;

@@ -17,10 +17,54 @@ struct TreeNode {
   TreeNode(int x) : val(x), left(NULL), right(NULL) {}
 };
 
-
-// A elegant solution without visited flags.
-// A detailed explaination from: http://leetcode.com/2010/04/binary-search-tree-in-order-traversal.html 
+// Morris inorder traversal, O(1) space without stack.
+//
+// let cur pointer: root.
+//
+// 1. cur->left is null: print cur->val & cur = cur->right.
+// 2. cur->left is not null:
+//    find predecessor of cur node.
+//    2.a) predecessor->right = null: not threaded, set thread.
+//          predecssor->right = cur.
+//          cur = cur->left.
+//    2.b) predecessor->left != null: have been threaded, reset.
+//          predecessor->right = null.
+//          print cur->val
+//          cur = cur->right.
+//
+// A detailed tutorial: http://www.cnblogs.com/AnnieKim/archive/2013/06/15/MorrisTraversal.html
 class Solution {
+public:
+  vector<int> inorderTraversal(TreeNode *root) {
+    TreeNode* cur = root;
+    vector<int> result;
+    while (cur) {
+      if (!cur->left) {
+        result.push_back(cur->val);
+        cur = cur->right; // move back to subtree root.
+      } else {
+        // Find a predecessor of node cur.
+        TreeNode* prev = cur->left;
+        while (prev->right && prev->right != cur)
+          prev = prev->right;
+
+        if (!prev->right) { // 2.a) null, set threaded at leaf's right son.
+          prev->right = cur;
+          cur = cur->left;
+        } else { // 2.b) not null, reset to null.
+          prev->right = NULL;
+          result.push_back(cur->val); // subtree root val.
+          cur = cur->right;
+        }
+      }
+    }
+    return result;
+  }
+};
+
+// A elegant solution without visited flags. O(n) space, stack
+// A detailed explaination from: http://leetcode.com/2010/04/binary-search-tree-in-order-traversal.html 
+class Solution1 {
 public:
   vector<int> inorderTraversal(TreeNode *root) {
     stack<TreeNode*> s;
@@ -73,7 +117,7 @@ public:
 };
 
 // A recursive solution.
-class Solution {
+class Solution3 {
 public:
   vector<int> inorder_seq;
   vector<int> inorderTraversal(TreeNode *root) {
